@@ -1,40 +1,36 @@
 import throttle from 'lodash.throttle';
+const LOCAL_KEY = 'feedback-form-state';
 
-const refs = {
-    form: document.querySelector('.feedback-form'),
-    input: document.querySelector('.feedback-form iput'),
-    textarea: document.querySelector('.feedback-form textarea'),
-};
+const form = document.querySelector('.feedback-form');
 
-refs.form.addEventListener('submit', onForm);
-refs.form.addEventListener('iput', throttle(onFormInput, 500));
-const KEY_FORM = 'feedback-form-state';
+form.addEventListener('input', throttle(onInputData, 500));
+form.addEventListener('submit', onFormSubmit);
 
-const {email, massage} = refs.form.elements;
+let dataForm = JSON.parse(localStorage.getItem(LOCAL_KEY)) || {};
+const { email, message } = form.elements;
+reloadPage();
 
-saveEl();
-FormData = {};
-function onForm(ev) {
-    const mailEl = email.value;
-    const massageEl = massage.value;
-    const FormDataSubmit = 
-    {mailEl, massageEl}
-    console.log(FormDataSubmit);
-    ev.preventDefault();
-    ev.curretTarget.reset();
-    localStorage.removeItem(KEY_FORM);
+function onInputData(e) {
+  dataForm = { email: email.value, message: message.value };
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(dataForm));
 }
-console.log(FormData);
-function onFormInput(ev) {
-    formData = {email: email.value, massage: massage.value};
-    const stringifyKey = localStorage.setItem(KEY_FORM, JSON.stringify(formData));
-}
-function saveEl() {
-    let saveMsg = JSON.parse(localStorage.getItem(KEY_FORM)) || '';
 
-    if (saveMsg){
-        email.value = saveMsg.email || '';
-        massage.value = saveMsg.massage || '';
-        return ;
-    }    
+function reloadPage() {
+  if (dataForm) {
+    email.value = dataForm.email || '';
+    message.value = dataForm.message || '';
+  }
+}
+
+function onFormSubmit(e) {
+  e.preventDefault();
+  console.log({ email: email.value, message: message.value });
+
+  if (email.value === '' || message.value === '') {
+    return alert('Please fill in all the fields!');
+  }
+
+  localStorage.removeItem(LOCAL_KEY);
+  e.currentTarget.reset();
+  dataForm = {};
 }
